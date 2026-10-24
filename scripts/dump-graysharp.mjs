@@ -1,0 +1,13 @@
+import sharp from 'sharp';
+import { createWorker } from 'tesseract.js';
+import fs from 'node:fs';
+const dir = 'D:/APPMI/docs/BERKAS UMAT MARIA IMMACULATA TIAP KUB/BERKAS UMAT KUB 1/KK';
+const img = dir + '/' + fs.readdirSync(dir)[0];
+const out = 'D:/APPMI/scripts/v_gray_sharp.png';
+await sharp(img).grayscale().sharpen().toFile(out);
+const worker = await createWorker('ind');
+await worker.setParameters({ tessedit_pageseg_mode: '6' });
+const { data } = await worker.recognize(out);
+fs.writeFileSync('D:/APPMI/scripts/graysharp.txt', data.text);
+console.log('CONF', data.confidence);
+await worker.terminate();

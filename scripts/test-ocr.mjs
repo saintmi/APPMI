@@ -1,0 +1,10 @@
+import { createWorker } from 'tesseract.js';
+import fs from 'node:fs';
+const dir = 'D:/APPMI/docs/BERKAS UMAT MARIA IMMACULATA TIAP KUB/BERKAS UMAT KUB 1/KK';
+const img = dir + '/' + fs.readdirSync(dir)[0];
+console.log('IMG', img);
+const worker = await createWorker('ind');
+const { data } = await worker.recognize(img);
+console.log('CONF', data.confidence);
+console.log(data.text.slice(0,2000));
+await worker.terminate();

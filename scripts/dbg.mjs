@@ -1,0 +1,12 @@
+import JSZip from 'jszip';
+import fs from 'node:fs';
+import { parseSharedStrings } from '../src/export/template-patcher.ts';
+const z = await JSZip.loadAsync(fs.readFileSync('D:/APPMI/out-test.xlsx'));
+const ssXml = await z.file('xl/sharedStrings.xml').async('text');
+const ss = parseSharedStrings(ssXml);
+console.log('total: ' + ss.length);
+ss.forEach((s, i) => { if (i >= 183) console.log(i + ': [' + s + ']'); });
+console.log('tail: ' + ssXml.slice(-600));
+const ux = await z.file('xl/worksheets/sheet4.xml').async('text');
+const m3 = ux.match(/<row [^>]*r="3"[^>]*>([\s\S]*?)<\/row>/);
+console.log('row3: ' + (m3 ? m3[0].slice(0, 1200) : 'none'));
