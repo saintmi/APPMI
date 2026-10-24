@@ -1,7 +1,7 @@
 /* ==========================================================================
-   APPMI — Sistem desain global (Fase 8)
+   APPMI â€” Sistem desain global (Fase 8)
    Satu-satunya stylesheet aplikasi. Diimpor sekali dari src/main.tsx.
-   Token warna/tipografi/spacing mengikuti docs/plan.md §4.6–4.11.
+   Token warna/tipografi/spacing mengikuti docs/plan.md Â§4.6â€“4.11.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -10,43 +10,43 @@
 :root {
   color-scheme: light;
 
-  /* Warna — permukaan */
+  /* Warna â€” permukaan */
   --color-app-bg: #F6F8FB;
   --color-surface: #FFFFFF;
   --color-surface-muted: #F0F3F8;
   --color-surface-sunken: #F7F9FC;
 
-  /* Warna — teks */
+  /* Warna â€” teks */
   --color-text: #182230;
   --color-text-muted: #647184;
   --color-text-subtle: #7A8699;
 
-  /* Warna — garis */
+  /* Warna â€” garis */
   --color-border: #DCE2EA;
   --color-border-strong: #C3CCD9;
 
-  /* Warna — utama */
+  /* Warna â€” utama */
   --color-primary: #285A9D;
   --color-primary-hover: #214A82;
   --color-primary-soft: #E8F1FF;
   --color-primary-text: #234C83;
 
-  /* Warna — penanda "Perlu dilengkapi" */
+  /* Warna â€” penanda "Perlu dilengkapi" */
   --color-complete-bg: #FFF4D6;
   --color-complete-border: #EFDCA6;
   --color-complete-text: #79520A;
 
-  /* Warna — penanda "Perlu konfirmasi" */
+  /* Warna â€” penanda "Perlu konfirmasi" */
   --color-confirm-bg: #E8F1FF;
   --color-confirm-border: #C9DCF7;
   --color-confirm-text: #234C83;
 
-  /* Warna — bahaya */
+  /* Warna â€” bahaya */
   --color-danger: #B42318;
   --color-danger-bg: #FEF3F2;
   --color-danger-border: #F0C7C4;
 
-  /* Warna — lain-lain */
+  /* Warna â€” lain-lain */
   --color-success: #217346;
   --color-warning-bg: #FFF9C4;
   --color-warning-border: #E8D9A0;
@@ -100,7 +100,7 @@
   --z-topbar: 20;
   --z-sidebar: 30;
   --z-drawer: 40;
-  --z-overlay: 45;
+  --z-overlay: 35;
   --z-dialog: 50;
   --z-toast: 60;
 }
@@ -194,7 +194,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   3. Layout — App Shell
+   3. Layout â€” App Shell
    -------------------------------------------------------------------------- */
 .app-shell {
   min-height: 100dvh;
@@ -427,6 +427,12 @@ body {
 }
 
 .nav__item {
+  border: 0;
+  background: none;
+  width: 100%;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   display: flex;
   align-items: center;
   justify-content: space-between;
