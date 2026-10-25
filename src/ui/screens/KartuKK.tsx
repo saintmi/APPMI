@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAplikasi, snapshotDari } from '../../state/store.ts';
-import { persistensiDexie } from '../../state/persistence.ts';
+import { persistensiAktif } from '../../state/autoSave.ts';
 import PersonLink from '../components/PersonLink.tsx';
 import Field from '../components/Field.tsx';
 import MemberPicker from '../components/MemberPicker.tsx';
@@ -43,14 +43,14 @@ export default function KartuKK({ id }: { id: string }) {
     });
     if (!ya) return;
     st.hapusKk(kk.id);
-    await persistensiDexie.simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(st));
     st.tampilkanPesan('KK dihapus.', 'ok');
     window.location.hash = '#/kk';
   };
 
   const simpanKK = async (patch: { nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }) => {
     st.ubahKk(kk.id, patch);
-    await persistensiDexie.simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(st));
     st.tampilkanPesan('Data KK disimpan.', 'ok');
   };
 

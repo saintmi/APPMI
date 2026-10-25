@@ -1,4 +1,4 @@
-﻿import { neon } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
 
 export const sql = neon(process.env.DATABASE_URL);
 
@@ -15,9 +15,23 @@ CREATE TABLE IF NOT EXISTS keputusan_duplikat (id_pasangan TEXT PRIMARY KEY, id_
 CREATE TABLE IF NOT EXISTS lampiran (id TEXT PRIMARY KEY, entitas TEXT NOT NULL, id_entitas TEXT NOT NULL, nama TEXT NOT NULL, tipe TEXT NOT NULL, ukuran BIGINT NOT NULL DEFAULT 0, sumber TEXT NOT NULL DEFAULT 'lokal', id_drive TEXT, diunggah_pada TEXT NOT NULL, data_base64 TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS storage_objects (id TEXT PRIMARY KEY, owner_type TEXT NOT NULL, owner_id TEXT NOT NULL, bucket TEXT NOT NULL, object_key TEXT NOT NULL UNIQUE, file_name TEXT NOT NULL, content_type TEXT, size BIGINT, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS app_users (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'admin', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS llm_keys (id TEXT PRIMARY KEY, label TEXT NOT NULL, key_encrypted TEXT NOT NULL, key_suffix TEXT NOT NULL, aktif BOOLEAN NOT NULL DEFAULT true, pemakaian_hari_ini INTEGER NOT NULL DEFAULT 0, istirahat_sampai TIMESTAMPTZ, galat_terakhir TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS user_preferences (username TEXT NOT NULL REFERENCES app_users(username) ON DELETE CASCADE, key TEXT NOT NULL, value JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), PRIMARY KEY (username, key));
+CREATE TABLE IF NOT EXISTS emergency_backups (id BIGSERIAL PRIMARY KEY, username TEXT, reason TEXT NOT NULL DEFAULT '', snapshot JSONB NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS user_sessions (id TEXT PRIMARY KEY, username TEXT NOT NULL REFERENCES app_users(username) ON DELETE CASCADE, token_hash TEXT NOT NULL, expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), revoked_at TIMESTAMPTZ, user_agent TEXT, ip TEXT);
+CREATE TABLE IF NOT EXISTS llm_settings (id INTEGER PRIMARY KEY, diaktifkan BOOLEAN NOT NULL DEFAULT false, mode_hanya_struktur BOOLEAN NOT NULL DEFAULT true, model_tingkat JSONB NOT NULL DEFAULT '[]'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), CONSTRAINT llm_settings_single_row CHECK (id = 1));
 `;
   const statements = ddl.split(';').map(s => s.trim()).filter(Boolean);
   for (const stmt of statements) {
     await sql.query(stmt);
   }
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS tema TEXT NOT NULL DEFAULT 'sistem'`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS bahasa TEXT NOT NULL DEFAULT 'id'`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS format_tanggal TEXT NOT NULL DEFAULT 'DD/MM/YYYY'`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS cadangan_otomatis BOOLEAN NOT NULL DEFAULT true`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS interval_cadangan_menit INTEGER NOT NULL DEFAULT 5`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS retensi_audit_hari INTEGER NOT NULL DEFAULT 365`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS pengaturan_lain JSONB NOT NULL DEFAULT '{}'::jsonb`);
+  await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS updated_by TEXT`);
 }

@@ -25,7 +25,20 @@ export const MENU: MenuGrup[] = [
       { label: 'Mode Tabel', rute: { layar: 'modetabel' } },
     ],
   },
-  { label: 'Peristiwa', items: [{ label: 'Peristiwa', rute: { layar: 'peristiwa' } }] },
+  {
+    label: 'Peristiwa',
+    items: [
+      { label: 'Semua Peristiwa', rute: { layar: 'peristiwa' } },
+      { label: 'Kematian', rute: { layar: 'peristiwa', jenis: 'KEMATIAN' } },
+      { label: 'Pindah Agama', rute: { layar: 'peristiwa', jenis: 'PINDAH AGAMA' } },
+      { label: 'Mutasi', rute: { layar: 'peristiwa', jenis: 'Mutasi' } },
+      { label: 'Sakramen Inisiasi', rute: { layar: 'peristiwa', jenis: 'Sakramen Inisiasi' } },
+      { label: 'Perminyakan Suci', rute: { layar: 'peristiwa', jenis: 'PERMINYAKAN SUCI' } },
+      { label: 'Seminari Biara', rute: { layar: 'peristiwa', jenis: 'SEMINARI BIARA' } },
+      { label: 'Perkawinan Gerejani', rute: { layar: 'peristiwa', jenis: 'PERKAWINAN GEREJANI' } },
+      { label: 'Pembubaran', rute: { layar: 'peristiwa', jenis: 'PEMBUBARAN' } },
+    ],
+  },
   {
     label: 'Perlu ditindaklanjuti',
     items: [

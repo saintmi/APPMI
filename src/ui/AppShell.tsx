@@ -5,7 +5,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAplikasi, type AplikasiState } from '../state/store.ts';
 import { parseRute, gotoRute, type Rute } from './router.ts';
-import { clearAuth } from '../auth/auth.ts';
+import { logout } from '../auth/auth.ts';
 import { MENU, itemAktif, penandaBadge } from './nav.ts';
 import PageHeader from './components/PageHeader.tsx';
 import GlobalSearch from './components/GlobalSearch.tsx';
@@ -141,7 +141,7 @@ export default function AppShell() {
               {st.settings?.namaLingkungan || '—'}
             </div>
             <SaveStatus />
-            <button className="btn btn--ghost btn--sm" onClick={() => { clearAuth(); window.location.reload(); }}>Keluar</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => { void logout().then(() => window.location.reload()); }}>Keluar</button>
           </div>
         </header>
 
@@ -191,7 +191,7 @@ function layarDariRute(r: Rute, st: AplikasiState): ReactNode {
     case 'modetabel': return <ModeTabel />;
     case 'umat': return r.id ? <KartuUmat id={r.id} /> : <Umat />;
     case 'kk': return r.id ? <KartuKK id={r.id} /> : <Kk />;
-    case 'peristiwa': return <Peristiwa />;
+    case 'peristiwa': return <Peristiwa jenis={r.jenis} />;
     case 'rekap': return <Rekap st={st} />;
     case 'ekspor': return <Ekspor st={st} />;
     case 'impor': return <Impor />;

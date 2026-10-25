@@ -25,11 +25,13 @@ export function onSimpanDarurat(cb: () => void) {
 }
 
 function simpanDarurat(s: unknown) {
-  try {
-    localStorage.setItem('appmi-emergency-backup', JSON.stringify(s));
-    localStorage.setItem('appmi-emergency-waktu', new Date().toISOString());
-  } catch {
-    // localStorage juga gagal — tidak bisa dilakukan apa-apa
+  if (isAuthenticated()) {
+    void fetch('/api/emergency', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ snapshot: s, reason: 'gagal-simpan' }),
+    }).catch(() => { /* abaikan */ });
   }
   if (onEmergency) onEmergency();
 }
@@ -106,10 +108,5 @@ export async function muatAplikasi(): Promise<void> {
     }
   } finally {
     sedangMuat = false;
-  }
-  const darurat = localStorage.getItem('appmi-emergency-backup');
-  const waktu = localStorage.getItem('appmi-emergency-waktu');
-  if (darurat && waktu) {
-    (window as unknown as { __APPMI_EMERGENCY__?: { data: string; waktu: string } }).__APPMI_EMERGENCY__ = { data: darurat, waktu };
   }
 }

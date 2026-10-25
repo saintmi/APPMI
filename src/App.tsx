@@ -1,58 +1,57 @@
-// ============================================================================
-// App — inisialisasi aplikasi + App Shell (Fase 8)
-// ============================================================================
-
-import { useEffect } from 'react';
-import { useAplikasi } from './state/store.ts';
+import { useEffect, useState } from 'react';
 import { muatAplikasi, aktifkanAutoSimpan, onSimpanDarurat } from './state/autoSave.ts';
 import AppShell from './ui/AppShell.tsx';
-import { isAuthenticated } from './auth/auth.ts';
+import { ensureSession } from './auth/auth.ts';
 import Login from './ui/screens/Login.tsx';
 
 export default function App() {
-  if (!isAuthenticated()) {
-    return <Login />;
-  }
+  const [siap, setSiap] = useState(false);
+  const [terautentikasi, setTerautentikasi] = useState(false);
+  const [dataSiap, setDataSiap] = useState(false);
 
   useEffect(() => {
-    muatAplikasi();
-    aktifkanAutoSimpan();
+    ensureSession().then((ok) => {
+      setTerautentikasi(ok);
+      setSiap(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!terautentikasi) {
+      setDataSiap(false);
+      return;
+    }
+    let aktif = true;
+    (async () => {
+      try {
+        await muatAplikasi();
+      } finally {
+        if (aktif) {
+          aktifkanAutoSimpan();
+          setDataSiap(true);
+        }
+      }
+    })();
 
     onSimpanDarurat(() => {
       const e = (window as unknown as { __APPMI_EMERGENCY__?: { waktu: string } }).__APPMI_EMERGENCY__;
       if (e) {
         // Disimpan global agar UI (SaveStatus / toast) dapat menampilkannya.
-        // Tidak diubah di sini agar referensi handler tetap stabil.
       }
     });
 
     const handler = (event: ErrorEvent) => {
-      const st = useAplikasi.getState();
-      try {
-        const s = JSON.stringify({
-          settings: st.settings,
-          umat: st.umat,
-          kk: st.kk,
-          peristiwa: st.peristiwa,
-          riwayat: st.riwayat,
-          audit: st.audit,
-          penanda: st.penanda,
-          keputusanDuplikat: st.keputusanDuplikat,
-        });
-        localStorage.setItem('appmi-emergency-error', s);
-        localStorage.setItem('appmi-emergency-waktu', new Date().toISOString());
-        console.error('[darurat] error tak tertangani:', event.message);
-      } catch {
-        // biarkan
-      }
+      console.error('[darurat] error tak tertangani:', event.message);
     };
-
     window.addEventListener('error', handler);
     return () => {
+      aktif = false;
       window.removeEventListener('error', handler);
     };
-  }, []);
+  }, [terautentikasi]);
 
+  if (!siap) return <div className="page-card" style={{ maxWidth: 420, margin: '80px auto' }}><div className="card"><div className="card__body">Memuat sesi...</div></div></div>;
+  if (terautentikasi && !dataSiap) return <div className="page-card" style={{ maxWidth: 420, margin: '80px auto' }}><div className="card"><div className="card__body">Memuat data...</div></div></div>;
+  if (!terautentikasi) return <Login />;
   return <AppShell />;
 }
-

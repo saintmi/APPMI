@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAplikasi, snapshotDari, umatDenganStatus } from '../../state/store.ts';
-import { persistensiDexie } from '../../state/persistence.ts';
+import { persistensiAktif } from '../../state/autoSave.ts';
 import { gotoRute } from '../router.ts';
 import type { Umat } from '../../engine/types.ts';
 import PersonLink from '../components/PersonLink.tsx';
@@ -68,7 +68,7 @@ export default function KartuUmat({ id }: { id: string }) {
     }
 
     st.ubahUmat(u.id, patch);
-    await persistensiDexie.simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(st));
     st.tampilkanPesan(`${bagian} disimpan.`, 'ok');
   };
 

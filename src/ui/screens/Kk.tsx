@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAplikasi, snapshotDari } from '../../state/store.ts';
-import { persistensiDexie } from '../../state/persistence.ts';
+import { persistensiAktif } from '../../state/autoSave.ts';
 import { gotoRute } from '../router.ts';
 import type { Kk } from '../../engine/types.ts';
 import Field from '../components/Field.tsx';
@@ -43,7 +43,7 @@ export default function Kk() {
     }
     const k: Kk = { id: '', nomorKK: form.nomorKK.trim(), namaKepalaKeluarga: form.namaKepalaKeluarga.trim(), alamat: form.alamat, KUB: form.KUB, lampiran: [] };
     st.tambahKk(k);
-    await persistensiDexie.simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(st));
     setForm({ show: false, nomorKK: '', namaKepalaKeluarga: '', alamat: '', KUB: '' });
     setPesan(`KK ${form.nomorKK} ditambahkan.`);
     setTimeout(() => setPesan(''), 1500);

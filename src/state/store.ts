@@ -10,7 +10,7 @@ import type {
 } from '../engine/types.ts';
 import { buatEntriAudit } from '../engine/audit.ts';
 import { terapkanStatus, terapkanStatusUntuk } from '../engine/status.ts';
-import { IdAllocator, ID_UMAT, ID_KK } from '../engine/idAllocator.ts';
+import { IdAllocator, ID_UMAT, ID_KK, ID_PERISTIWA } from '../engine/idAllocator.ts';
 import { STATUS_AKTIF } from '../engine/types.ts';
 
 export interface Snapshot {
@@ -129,6 +129,7 @@ function ambilSnapshotLengkap(st: AplikasiState): unknown {
 
 const alokasiUmat = new IdAllocator(ID_UMAT);
 const alokasiKk = new IdAllocator(ID_KK);
+const alokasiPeristiwa = new IdAllocator(ID_PERISTIWA);
 
 const ACUAN_DEFAULT = '31/12/2026';
 
@@ -167,6 +168,7 @@ export const useAplikasi = create<AplikasiState>((set, get) => ({
   muatDariSnapshot(s: Snapshot) {
     alokasiUmat.seed(s.umat.map((u) => u.id));
     alokasiKk.seed(s.kk.map((k) => k.id));
+    alokasiPeristiwa.seed(s.peristiwa.map((p) => p.id));
     set((st) => {
       const dasar = {
         ...st,
@@ -222,9 +224,24 @@ export const useAplikasi = create<AplikasiState>((set, get) => ({
       const sebelum = ambilSnapshotLengkap(st);
       const { status: _statusDiabaikan, ...isi } = patch;
       void _statusDiabaikan;
+      const identitasBerubah =
+        isi.nama !== undefined || isi.jenisKelamin !== undefined || isi.tanggalLahir !== undefined;
       const next = {
         ...st,
         umat: st.umat.map((u) => (u.id === id ? { ...u, ...isi } : u)),
+        peristiwa: identitasBerubah
+          ? st.peristiwa.map((p) =>
+              p.idUmat === id
+                ? {
+                    ...p,
+                    nama: isi.nama ?? p.nama,
+                    jenisKelamin: isi.jenisKelamin ?? p.jenisKelamin,
+                    tanggalLahir: isi.tanggalLahir ?? p.tanggalLahir,
+                    lingkungan: st.settings?.namaLingkungan ?? p.lingkungan,
+                  }
+                : p,
+            )
+          : st.peristiwa,
       };
       const entri = buatEntriAudit('UBAH', 'Umat', id, sebelum, ambilSnapshotLengkap(next));
       return tambahEntriKeState(next, entri);
@@ -370,11 +387,13 @@ export const useAplikasi = create<AplikasiState>((set, get) => ({
   },
 
   tambahPeristiwa(p: Peristiwa) {
+    const id = p.id && p.id.trim() ? p.id : alokasiPeristiwa.alokasi();
+    const baru: Peristiwa = { ...p, id };
     set((st) => {
       const sebelum = ambilSnapshotLengkap(st);
-      const dasar = { ...st, peristiwa: [...st.peristiwa, p] };
-      const next = denganStatusUntuk(dasar, [p.idUmat]);
-      const entri = buatEntriAudit('TAMBAH', 'Peristiwa', p.id, sebelum, ambilSnapshotLengkap(next));
+      const dasar = { ...st, peristiwa: [...st.peristiwa, baru] };
+      const next = denganStatusUntuk(dasar, [baru.idUmat]);
+      const entri = buatEntriAudit('TAMBAH', 'Peristiwa', baru.id, sebelum, ambilSnapshotLengkap(next));
       return tambahEntriKeState(next, entri);
     });
   },

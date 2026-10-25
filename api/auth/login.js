@@ -1,4 +1,4 @@
-﻿import { checkCredentials, createToken } from '../_lib/auth.js';
+import { checkCredentials, createToken, buildAuthCookie } from '../_lib/auth.js';
 import { setCors, handleOptions } from '../_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -14,5 +14,6 @@ export default async function handler(req, res) {
     return;
   }
   const token = await createToken(String(username));
-  res.status(200).json({ token, username });
+  res.setHeader('Set-Cookie', buildAuthCookie(token));
+  res.status(200).json({ username: String(username) });
 }

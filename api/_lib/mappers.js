@@ -4,6 +4,13 @@
     daftarKUB: r.daftar_kub ?? [],
     tahunStatistik: r.tahun_statistik,
     tanggalAcuan: r.tanggal_acuan,
+    tema: r.tema ?? 'sistem',
+    bahasa: r.bahasa ?? 'id',
+    formatTanggal: r.format_tanggal ?? 'DD/MM/YYYY',
+    cadanganOtomatis: r.cadangan_otomatis ?? true,
+    intervalCadanganMenit: r.interval_cadangan_menit ?? 5,
+    retensiAuditHari: r.retensi_audit_hari ?? 365,
+    pengaturanLain: r.pengaturan_lain ?? {},
   } : null;
 }
 

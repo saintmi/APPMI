@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAplikasi, snapshotDari, sinkronkanPeristiwa } from '../../state/store.ts';
-import { persistensiDexie } from '../../state/persistence.ts';
+import { persistensiAktif } from '../../state/autoSave.ts';
 import type { Umat } from '../../engine/types.ts';
 import PersonLink from '../components/PersonLink.tsx';
 import Field from '../components/Field.tsx';
@@ -39,7 +39,7 @@ export default function Umat({ idUmat }: { idUmat?: string } = {}) {
       tanggalLahir: form.tanggalLahir, agama: form.agama, status: 'Aktif', KUB: form.KUB, alamat: form.alamat, lampiran: [],
     };
     st.tambahUmat(u);
-    await persistensiDexie.simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(st));
     setForm({ show: false, nama: '', jenisKelamin: 'Laki-laki', tanggalLahir: '', agama: 'Katolik', alamat: '', KUB: '', idKK: '' });
     setPesan(`Umat ${form.nama} ditambahkan.`);
     setTimeout(() => setPesan(''), 1500);

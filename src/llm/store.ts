@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { create } from 'zustand';
-import { buatRouterDariEnv, type LLMRouter } from './router.ts';
+import { buatRouterDariEnv, LLMRouter } from './router.ts';
 import { type LLMKonfigurasi, type LLMKunci, type LLMStatus, KONFIGURASI_DEFAULT } from './types.ts';
 
 function hitungStatus(kunci: LLMKunci[], router: LLMRouter | null, diaktifkan: boolean): LLMStatus {
@@ -27,6 +27,8 @@ interface LLMState {
   router: LLMRouter | null;
   status: LLMStatus;
   inisialisasiDariEnv(): void;
+  muatDariBackend(): Promise<void>;
+  simpanKeBackend(): Promise<void>;
   tambahKunci(label: string, nilai: string): void;
   hapusKunci(index: number): void;
   ubahAktifKunci(index: number, aktif: boolean): void;
@@ -85,6 +87,52 @@ export const useLLM = create<LLMState>((set, get) => ({
     });
   },
 
+  async muatDariBackend() {
+    try {
+      const res = await fetch('/api/llm', { credentials: 'include' });
+      if (!res.ok) return;
+      const body = await res.json();
+      if (body.settings) {
+        const cfg = {
+          ...JSON.parse(JSON.stringify(KONFIGURASI_DEFAULT)),
+          diaktifkan: !!body.settings.diaktifkan,
+          modeHanyaStruktur: body.settings.modeHanyaStruktur !== false,
+          tingkat: Array.isArray(body.settings.tingkat) && body.settings.tingkat.length ? body.settings.tingkat : JSON.parse(JSON.stringify(KONFIGURASI_DEFAULT)).tingkat,
+          promptSistem: KONFIGURASI_DEFAULT.promptSistem,
+        };
+        set({ konfigurasi: cfg });
+      }
+      if (Array.isArray(body.kunci)) {
+        const kunci = body.kunci.map((k: any) => ({
+          label: k.label,
+          nilai: k.nilai,
+          aktif: k.aktif !== false,
+          istirahatSampai: k.istirahatSampai,
+          pemakaianHariIni: k.pemakaianHariIni ?? 0,
+          galatTerakhir: k.galatTerakhir ?? null,
+        }));
+        const router = kunci.length ? new LLMRouter(get().konfigurasi, kunci) : null;
+        set({ kunci, router, status: hitungStatus(kunci, router, get().konfigurasi.diaktifkan) });
+      }
+    } catch {
+      // abaikan
+    }
+  },
+
+  async simpanKeBackend() {
+    const st = get();
+    try {
+      await fetch('/api/llm', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ konfigurasi: st.konfigurasi, kunci: st.kunci }),
+      });
+    } catch {
+      // abaikan
+    }
+  },
+
   tambahKunci(label: string, nilai: string) {
     set((st) => {
       const kunciBaru = [...st.kunci, { label, nilai, aktif: true, pemakaianHariIni: 0, galatTerakhir: null }];
@@ -139,4 +187,13 @@ export const useLLM = create<LLMState>((set, get) => ({
   statusLengkap(): LLMStatus {
     return get().status;
   },
-}));
+})); 
+
+useLLM.subscribe((state, prev) => {
+  if (state.kunci !== prev.kunci || state.konfigurasi !== prev.konfigurasi) {
+    void state.simpanKeBackend();
+  }
+});
+
+
+

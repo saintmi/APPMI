@@ -4,6 +4,8 @@
 
 import { useState } from 'react';
 import { useAplikasi } from '../../state/store.ts';
+import { persistensiAktif } from '../../state/autoSave.ts';
+import { snapshotDari } from '../../state/store.ts';
 import Field from '../components/Field.tsx';
 
 export default function Settings() {
@@ -12,7 +14,7 @@ export default function Settings() {
   const [kubText, setKubText] = useState(st.settings?.daftarKUB.join(', ') ?? '');
   const [pesan, setPesan] = useState('');
 
-  const simpan = () => {
+  const simpan = async () => {
     const daftarKUB = kubText.split(',').map((s) => s.trim()).filter(Boolean);
     if (!nama.trim()) { setPesan('Nama lingkungan wajib diisi.'); return; }
     if (daftarKUB.length === 0) { setPesan('Daftar KUB wajib diisi (pisahkan dengan koma).'); return; }
@@ -22,7 +24,18 @@ export default function Settings() {
       tahunStatistik: 2026,
       tanggalAcuan: '31/12/2026',
     });
-    st.tampilkanPesan('Disimpan.', 'ok');
+    try {
+      await persistensiAktif().simpan(snapshotDari(useAplikasi.getState()));
+      st.tandaiTersimpan(new Date().toISOString().slice(0, 19).replace('T', ' '));
+      st.tandaiStatus('tersimpan');
+      setPesan('Disimpan ke database.');
+      st.tampilkanPesan('Pengaturan disimpan ke database.', 'ok');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      st.tandaiStatus('gagal', `Gagal menyimpan pengaturan: ${msg}`);
+      setPesan(`Gagal menyimpan ke database: ${msg}`);
+      st.tampilkanPesan(`Gagal menyimpan pengaturan: ${msg}`, 'galat');
+    }
   };
 
   return (

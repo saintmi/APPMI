@@ -70,7 +70,14 @@ export default defineConfig({
           }
 
           try {
-            const mod: any = await server.ssrLoadModule(`/api/${relative}.ts`);
+            const candidates = [`/api/${relative}.ts`, `/api/${relative}.js`];
+            let mod: any = null;
+            let lastErr: any = null;
+            for (const candidate of candidates) {
+              try { mod = await server.ssrLoadModule(candidate); lastErr = null; break; }
+              catch (e: any) { lastErr = e; if (!/Failed to load url|Cannot find module|ENOENT/.test(String(e?.message))) throw e; }
+            }
+            if (!mod) throw lastErr;
             const handler = mod.default || mod.handler;
             if (typeof handler !== 'function') {
               res.statusCode = 404;

@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 
       if (value?.settings) {
         const s = value.settings;
-        queries.push(sql`INSERT INTO settings (id, nama_lingkungan, daftar_kub, tahun_statistik, tanggal_acuan, updated_at) VALUES (1, ${s.namaLingkungan ?? ''}, ${JSON.stringify(s.daftarKUB ?? [])}::jsonb, ${s.tahunStatistik ?? 2026}, ${s.tanggalAcuan ?? '31/12/2026'}, now())`);
+        queries.push(sql`INSERT INTO settings (id, nama_lingkungan, daftar_kub, tahun_statistik, tanggal_acuan, tema, bahasa, format_tanggal, cadangan_otomatis, interval_cadangan_menit, retensi_audit_hari, pengaturan_lain, updated_by, updated_at) VALUES (1, ${s.namaLingkungan ?? ''}, ${JSON.stringify(s.daftarKUB ?? [])}::jsonb, ${s.tahunStatistik ?? 2026}, ${s.tanggalAcuan ?? '31/12/2026'}, ${s.tema ?? 'sistem'}, ${s.bahasa ?? 'id'}, ${s.formatTanggal ?? 'DD/MM/YYYY'}, ${s.cadanganOtomatis ?? true}, ${s.intervalCadanganMenit ?? 5}, ${s.retensiAuditHari ?? 365}, ${JSON.stringify(s.pengaturanLain ?? {})}::jsonb, ${s.updatedBy ?? null}, now())`);
       }
       for (const k of value?.kk ?? []) {
         queries.push(sql`INSERT INTO kk (id, nomor_kk, nama_kepala_keluarga, alamat, kub, rt_rw, kode_pos, desa_kelurahan, kecamatan, kabupaten_kota, provinsi, tanggal_dikeluarkan, file_sumber, nama_file_scan, confidence_ocr, catatan_verifikasi, updated_at) VALUES (${k.id}, ${k.nomorKK ?? ''}, ${k.namaKepalaKeluarga ?? ''}, ${k.alamat ?? ''}, ${k.KUB ?? ''}, ${k.rtRw ?? null}, ${k.kodePos ?? null}, ${k.desaKelurahan ?? null}, ${k.kecamatan ?? null}, ${k.kabupatenKota ?? null}, ${k.provinsi ?? null}, ${k.tanggalDikeluarkan ?? null}, ${k.fileSumber ?? null}, ${k.namaFileScan ?? null}, ${k.confidenceOcr ?? null}, ${k.catatanVerifikasi ?? null}, now())`);

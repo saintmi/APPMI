@@ -2,7 +2,7 @@
 // Layar Pengaturan LLM Gemini — Fase 6 (opsional, default mati)
 // ============================================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAplikasi } from '../../state/store.ts';
 import { useLLM } from '../../llm/store';
 import Field from '../components/Field.tsx';
@@ -11,6 +11,7 @@ export default function LLM() {
   const app = useAplikasi();
   const llm = useLLM();
   const st = llm.statusLengkap();
+  useEffect(() => { void llm.muatDariBackend(); }, []);
   const [pesan, setPesan] = useState('');
   const [labelBaru, setLabelBaru] = useState('');
   const [nilaiBaru, setNilaiBaru] = useState('');

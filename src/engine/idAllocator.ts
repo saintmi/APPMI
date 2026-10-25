@@ -81,3 +81,4 @@ export function nomorDariId(id: string): number | null {
 
 export const ID_UMAT = { prefix: 'UM', width: 5 } as const;
 export const ID_KK = { prefix: 'KK', width: 4 } as const;
+export const ID_PERISTIWA = { prefix: 'P', width: 5 } as const;

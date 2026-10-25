@@ -78,6 +78,7 @@ export type JenisPeristiwa =
   | 'MUTASI_MASUK'
   | 'DITERIMA MASUK'
   | 'BAPTIS'
+  | 'KRISMA'
   | 'KOMUNI PERTAMA'
   | 'PERMINYAKAN SUCI'
   | 'SEMINARI BIARA'

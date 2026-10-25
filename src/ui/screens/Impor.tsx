@@ -170,7 +170,7 @@ export default function Impor() {
         </p>
         <div className="card" style={{ textAlign: 'center', padding: 24 }}>
           <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} style={{ marginBottom: 12 }} />
-          <p className="muted">Sheet yang dikenali: DATA UMAT, DATA KK, BAPTIS, KEMATIAN, PINDAH AGAMA, MUTASI, DITERIMA MASUK, KOMUNI PERTAMA, PERKAWINAN GEREJANI, PEMBUBARAN, PERMINYAKAN SUCI, SEMINARI BIARA.</p>
+          <p className="muted">Sheet yang dikenali: DATA UMAT, DATA KK, BAPTIS, KRISMA, KEMATIAN, PINDAH AGAMA, MUTASI, DITERIMA MASUK, KOMUNI PERTAMA, PERKAWINAN GEREJANI, PEMBUBARAN, PERMINYAKAN SUCI, SEMINARI BIARA.</p>
         </div>
       </div>
     );

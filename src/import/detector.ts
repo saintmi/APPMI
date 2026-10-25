@@ -304,6 +304,7 @@ function normalisasiJK(v: string): string {
 export function sheetKeJenisPeristiwa(namaSheet: string): JenisPeristiwa | null {
   const map: Record<string, JenisPeristiwa> = {
     BAPTIS: 'BAPTIS',
+    KRISMA: 'KRISMA',
     'DITERIMA MASUK': 'DITERIMA MASUK',
     MUTASI: 'MUTASI_KELUAR',
     'PINDAH AGAMA': 'PINDAH AGAMA',

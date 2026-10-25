@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { useAplikasi, snapshotDari } from '../../state/store.ts';
-import { persistensiDexie } from '../../state/persistence.ts';
+import { persistensiAktif } from '../../state/autoSave.ts';
 import { findDuplicates } from '../../engine/warnings.ts';
 import PersonLink from '../components/PersonLink.tsx';
 
@@ -20,7 +20,7 @@ export default function Duplikat() {
     });
     if (!ya) return;
     st.gabungUmat(idA, idB);
-    await persistensiDexie.simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(st));
     st.tampilkanPesan('Duplikat digabung.', 'ok');
   };
 

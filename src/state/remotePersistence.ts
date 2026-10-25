@@ -41,7 +41,7 @@ function fromSerializable(raw: any): Snapshot {
 
 export const persistensiNeon = {
   async muat(): Promise<Snapshot | null> {
-    const res = await fetch('/api/state', { headers: authHeaders() });
+    const res = await fetch('/api/state', { headers: authHeaders(), credentials: 'include' });
     if (res.status === 204 || res.status === 404) return null;
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -54,6 +54,7 @@ export const persistensiNeon = {
     const res = await fetch('/api/state', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      credentials: 'include',
       body: JSON.stringify({ data: toSerializable(s) }),
     });
     if (!res.ok) {
