@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useAplikasi, penandaDariState, type Penanda, type AplikasiState } from '../../state/store.ts';
-import PersonLink from '../components/PersonLink.tsx';
+import { gotoRute } from '../router.ts';
 
 export default function Penanda() {
   const st = useAplikasi();
@@ -77,14 +77,64 @@ export default function Penanda() {
   );
 }
 
+function tindakLanjuti(p: Penanda, st: AplikasiState) {
+  if (p.entitas === 'Umat') {
+    gotoRute({ layar: 'umat', id: p.idEntitas });
+    return;
+  }
+  if (p.entitas === 'Kk') {
+    gotoRute({ layar: 'kk', id: p.idEntitas });
+    return;
+  }
+  if (p.entitas === 'Peristiwa') {
+    const pr = st.peristiwa.find((x) => x.id === p.idEntitas);
+    if (pr) {
+      gotoRute({ layar: 'peristiwa', jenis: pr.jenis });
+      return;
+    }
+  }
+  gotoRute({ layar: 'penanda' });
+}
+
 function renderItem(p: Penanda, st: AplikasiState) {
   const u = st.umat.find((x) => x.id === p.idEntitas);
+  const pr = p.entitas === 'Peristiwa' ? st.peristiwa.find((x) => x.id === p.idEntitas) : undefined;
+  const namaUmat = pr ? st.umat.find((x) => x.id === pr.idUmat)?.nama : u?.nama;
   return (
-    <li key={p.id} className="warning-list__item warning-list__item--complete">
-      <div className="cluster" style={{ gap: 6 }}>
+    <li
+      key={p.id}
+      className="warning-list__item warning-list__item--complete"
+      role="button"
+      tabIndex={0}
+      style={{ cursor: 'pointer' }}
+      onClick={() => tindakLanjuti(p, st)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tindakLanjuti(p, st); } }}
+      title="Klik untuk menindaklanjuti"
+    >
+      <div className="cluster" style={{ gap: 6, width: '100%' }}>
         <span className="badge badge--complete">{p.jenis}</span>
         <span className="muted">{p.pesan}</span>
-        {u && <PersonLink id={u.id} nama={u.nama ?? '(tanpa nama)'}>{u.nama || '(tanpa nama)'}</PersonLink>}
+        {u && (
+          <button
+            type="button"
+            className="person-link"
+            onClick={(e) => { e.stopPropagation(); gotoRute({ layar: 'umat', id: u.id }); }}
+            title={`Buka Kartu ${u.nama ?? ''}`}
+          >
+            {u.nama || '(tanpa nama)'}
+          </button>
+        )}
+        {pr && (
+          <button
+            type="button"
+            className="person-link"
+            onClick={(e) => { e.stopPropagation(); const uu = st.umat.find((x) => x.id === pr.idUmat); if (uu) gotoRute({ layar: 'umat', id: uu.id }); }}
+            title="Buka umat terkait"
+          >
+            {namaUmat || pr.nama || '(tanpa nama)'}
+          </button>
+        )}
+        <span className="muted" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>Tindak lanjuti →</span>
       </div>
     </li>
   );

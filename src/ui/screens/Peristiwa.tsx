@@ -37,6 +37,8 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
   const [form, setForm] = useState({
     idUmat: '', jenis: jenisDefaultUntuk(jenis), tanggal: '', keterangan: '',
   });
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTanggal, setEditTanggal] = useState('');
   const [cari, setCari] = useState('');
 
   const umat = st.umat;
@@ -70,6 +72,24 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
   const hapus = (id: string) => {
     if (!confirm(`Hapus peristiwa ${id}?`)) return;
     st.hapusPeristiwa(id);
+  };
+
+  const mulaiUbah = (p: Peristiwa) => {
+    setEditId(p.id);
+    setEditTanggal(p.tanggal ?? '');
+  };
+
+  const batalUbah = () => {
+    setEditId(null);
+    setEditTanggal('');
+  };
+
+  const simpanUbah = async (id: string) => {
+    if (!editTanggal.trim()) { st.tampilkanPesan('Tanggal wajib diisi.', 'galat'); return; }
+    st.ubahPeristiwa(id, { tanggal: editTanggal.trim() });
+    await persistensiAktif().simpan(snapshotDari(useAplikasi.getState()));
+    st.tampilkanPesan('Peristiwa diperbarui.', 'ok');
+    batalUbah();
   };
 
   const daftar = st.peristiwa
@@ -137,12 +157,30 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
                   <td className="mono tabular">{p.id}</td>
                   <td><PersonLink id={p.idUmat} nama={p.nama || u?.nama || '(tanpa nama)'}>{p.nama || u?.nama || '(tanpa nama)'}</PersonLink></td>
                   {!jenis && <td>{p.jenis}</td>}
-                  <td>{p.tanggal || '—'}</td>
+                  <td>
+                    {editId === p.id ? (
+                      <input
+                        className="field__control"
+                        style={{ width: 120 }}
+                        value={editTanggal}
+                        onChange={(e) => setEditTanggal(e.target.value)}
+                        placeholder="dd/MM/yyyy"
+                      />
+                    ) : (p.tanggal || '—')}
+                  </td>
                   <td>{p.keterangan || '—'}</td>
                   <td className="cluster" style={{ gap: 4 }}>
-                    <button className="btn btn--ghost btn--sm" onClick={() => hapus(p.id)}>
-                      Hapus
-                    </button>
+                    {editId === p.id ? (
+                      <>
+                        <button className="btn btn--primary btn--sm" onClick={() => { void simpanUbah(p.id); }}>Simpan</button>
+                        <button className="btn btn--ghost btn--sm" onClick={batalUbah}>Batal</button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="btn btn--ghost btn--sm" onClick={() => mulaiUbah(p)}>Ubah tanggal</button>
+                        <button className="btn btn--ghost btn--sm" onClick={() => hapus(p.id)}>Hapus</button>
+                      </>
+                    )}
                   </td>
                 </tr>
               );
