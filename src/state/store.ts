@@ -8,7 +8,7 @@ import type {
   Settings, Kk, Umat, Peristiwa, RiwayatPindahAlamat,
   AuditLogEntry, Penanda, KeputusanDuplikat, Lampiran,
 } from '../engine/types.ts';
-import { buatEntriAudit } from '../engine/audit.ts';
+import { buatEntriAudit, seedAuditCounter } from '../engine/audit.ts';
 import { terapkanStatus, terapkanStatusUntuk } from '../engine/status.ts';
 import { IdAllocator, ID_UMAT, ID_KK, ID_PERISTIWA } from '../engine/idAllocator.ts';
 import { STATUS_AKTIF } from '../engine/types.ts';
@@ -169,6 +169,7 @@ export const useAplikasi = create<AplikasiState>((set, get) => ({
     alokasiUmat.seed(s.umat.map((u) => u.id));
     alokasiKk.seed(s.kk.map((k) => k.id));
     alokasiPeristiwa.seed(s.peristiwa.map((p) => p.id));
+    seedAuditCounter((s.audit ?? []).map((a) => Number(a.id) || 0));
     set((st) => {
       const dasar = {
         ...st,

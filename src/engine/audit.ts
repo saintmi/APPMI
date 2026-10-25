@@ -6,6 +6,11 @@ import type { AuditLogEntry } from './types';
 
 let counter = 0;
 
+export function seedAuditCounter(ids: number[]) {
+  const maks = ids.reduce((a, b) => (b > a ? b : a), counter);
+  counter = Math.max(counter, maks);
+}
+
 export function buatEntriAudit(
   aksi: AuditLogEntry['aksi'],
   entitas: string,

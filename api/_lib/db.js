@@ -34,4 +34,5 @@ CREATE TABLE IF NOT EXISTS llm_settings (id INTEGER PRIMARY KEY, diaktifkan BOOL
   await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS retensi_audit_hari INTEGER NOT NULL DEFAULT 365`);
   await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS pengaturan_lain JSONB NOT NULL DEFAULT '{}'::jsonb`);
   await sql.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS updated_by TEXT`);
+await sql.query(`SELECT setval('audit_log_id_seq', COALESCE((SELECT MAX(id) FROM audit_log), 0), true)`);
 }
