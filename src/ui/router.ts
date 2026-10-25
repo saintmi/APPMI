@@ -23,6 +23,7 @@ export interface Rute {
   layar: RuteLayar;
   id?: string;
   jenis?: string;
+  tab?: string;
 }
 
 export function parseRute(hash: string): Rute {
@@ -33,6 +34,7 @@ export function parseRute(hash: string): Rute {
   const rute: Rute = { layar: (layar as RuteLayar) ?? 'beranda' };
   if (rute.layar === 'umat' || rute.layar === 'kk') {
     rute.id = segs[1];
+    if (segs[2]) rute.tab = decodeURIComponent(segs[2]);
   } else if (rute.layar === 'peristiwa' || rute.layar === 'penanda') {
     rute.jenis = segs[1] ? decodeURIComponent(segs[1]) : undefined;
   }
@@ -46,8 +48,8 @@ export function formatRute(r: Rute): string {
     case 'cadangan': return '#/cadangan';
     case 'llm': return '#/llm';
     case 'modetabel': return '#/modetabel';
-    case 'umat': return r.id ? `#/umat/${r.id}` : '#/umat';
-    case 'kk': return r.id ? `#/kk/${r.id}` : '#/kk';
+    case 'umat': return r.id ? (r.tab ? `#/umat/${r.id}/${encodeURIComponent(r.tab)}` : `#/umat/${r.id}`) : '#/umat';
+    case 'kk': return r.id ? (r.tab ? `#/kk/${r.id}/${encodeURIComponent(r.tab)}` : `#/kk/${r.id}`) : '#/kk';
     case 'peristiwa': return r.jenis ? `#/peristiwa/${encodeURIComponent(r.jenis)}` : '#/peristiwa';
     case 'rekap': return '#/rekap';
     case 'ekspor': return '#/ekspor';
@@ -67,7 +69,8 @@ export function ruteAktif(r: Rute, sekarang: Rute): boolean {
   return (
     r.layar === sekarang.layar &&
     r.id === sekarang.id &&
-    r.jenis === sekarang.jenis
+    r.jenis === sekarang.jenis &&
+    r.tab === sekarang.tab
   );
 }
 

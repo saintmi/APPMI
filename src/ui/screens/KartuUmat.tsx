@@ -2,8 +2,8 @@
 // Kartu Umat — halaman detail satu umat, rute #/umat/:id (Fase 8 §4.9)
 // ============================================================================
 
-import { useState } from 'react';
-import { useAplikasi, snapshotDari, umatDenganStatus } from '../../state/store.ts';
+import { useState, useEffect } from 'react';
+import { useAplikasi, snapshotDari, umatDenganStatus, penandaDariState } from '../../state/store.ts';
 import { persistensiAktif } from '../../state/autoSave.ts';
 import { gotoRute } from '../router.ts';
 import type { Umat } from '../../engine/types.ts';
@@ -11,11 +11,18 @@ import PersonLink from '../components/PersonLink.tsx';
 import Field from '../components/Field.tsx';
 import LampiranList from '../components/LampiranList.tsx';
 
-export default function KartuUmat({ id }: { id: string }) {
+export default function KartuUmat({ id, tab }: { id: string; tab?: string }) {
   const st = useAplikasi();
   const umat = umatDenganStatus(st);
   const u = umat.find((x) => x.id === id);
   const [edit, setEdit] = useState<{ bagian: string | null; data: Partial<Umat> | null }>({ bagian: null, data: null });
+  const [tindakLanjut, setTindakLanjut] = useState(tab === 'tindaklanjut');
+  const [editPeristiwaId, setEditPeristiwaId] = useState<string | null>(null);
+  const [editPeristiwaTanggal, setEditPeristiwaTanggal] = useState('');
+
+  useEffect(() => {
+    setTindakLanjut(tab === 'tindaklanjut');
+  }, [tab]);
 
   if (!u) {
     return (
@@ -76,6 +83,26 @@ export default function KartuUmat({ id }: { id: string }) {
 
   const peristiwa = st.peristiwa.filter((p) => p.idUmat === id).sort((a, b) => (b.tanggal ?? '').localeCompare(a.tanggal ?? ''));
   const kk = st.kk.find((k) => k.id === u.idKK);
+  const penandaUmat = penandaDariState(st).filter((p) => {
+    if (p.entitas === 'Umat' && p.idEntitas === id) return true;
+    if (p.entitas === 'Peristiwa') {
+      const pr = st.peristiwa.find((x) => x.id === p.idEntitas);
+      return pr?.idUmat === id;
+    }
+    return false;
+  });
+
+  const simpanTanggalPeristiwa = async (pid: string) => {
+    if (!editPeristiwaTanggal.trim()) {
+      st.tampilkanPesan('Tanggal wajib diisi.', 'galat');
+      return;
+    }
+    st.ubahPeristiwa(pid, { tanggal: editPeristiwaTanggal.trim() });
+    await persistensiAktif().simpan(snapshotDari(st));
+    st.tampilkanPesan('Peristiwa diperbarui.', 'ok');
+    setEditPeristiwaId(null);
+    setEditPeristiwaTanggal('');
+  };
 
   return (
     <div className="page-card">
@@ -93,6 +120,9 @@ export default function KartuUmat({ id }: { id: string }) {
           </div>
         </div>
         <div className="cluster" style={{ gap: 6 }}>
+          <button className={tindakLanjut ? 'btn btn--primary' : 'btn btn--ghost'} onClick={() => setTindakLanjut((v) => !v)}>
+            Tindak Lanjut
+          </button>
           <button className="btn btn--primary" onClick={() => setEdit({ bagian: 'identitas', data: { nama: u.nama, jenisKelamin: u.jenisKelamin, tanggalLahir: u.tanggalLahir, agama: u.agama, alamat: u.alamat } })}>
             Edit Data Diri
           </button>
@@ -104,6 +134,87 @@ export default function KartuUmat({ id }: { id: string }) {
           </button>
         </div>
       </div>
+
+      {tindakLanjut && (
+        <div className="detail-section">
+          <div className="detail-section__header">
+            <div className="detail-section__title">Tindak Lanjut</div>
+          </div>
+          <div className="detail-section__body">
+            {penandaUmat.length === 0 && (
+              <p className="muted" style={{ textAlign: 'center' }}>Tidak ada penanda aktif untuk umat ini.</p>
+            )}
+            <ul className="warning-list">
+              {penandaUmat.map((p) => {
+                const pr = p.entitas === 'Peristiwa' ? st.peristiwa.find((x) => x.id === p.idEntitas) : undefined;
+                return (
+                  <li key={p.id} className="warning-list__item warning-list__item--complete">
+                    <div className="cluster" style={{ gap: 6, width: '100%', flexWrap: 'wrap' }}>
+                      <span className="badge badge--complete">{p.jenis}</span>
+                      <span className="muted">{p.pesan}</span>
+                      {p.entitas === 'Umat' && (
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--sm"
+                          onClick={() => setEdit({ bagian: 'identitas', data: { nama: u.nama, jenisKelamin: u.jenisKelamin, tanggalLahir: u.tanggalLahir, agama: u.agama, alamat: u.alamat } })}
+                        >
+                          Edit Data Diri
+                        </button>
+                      )}
+                      {p.entitas === 'Umat' && p.pesan.includes('belum terhubung ke KK') && (
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--sm"
+                          onClick={() => setEdit({ bagian: 'kk', data: { idKK: u.idKK } })}
+                        >
+                          Edit KK
+                        </button>
+                      )}
+                      {pr && (
+                        <>
+                          {editPeristiwaId === pr.id ? (
+                            <div className="cluster" style={{ gap: 6 }}>
+                              <input
+                                className="field__control"
+                                type="text"
+                                value={editPeristiwaTanggal}
+                                onChange={(e) => setEditPeristiwaTanggal(e.target.value)}
+                                placeholder="dd/MM/yyyy"
+                                style={{ width: 130 }}
+                              />
+                              <button type="button" className="btn btn--primary btn--sm" onClick={() => simpanTanggalPeristiwa(pr.id)}>
+                                Simpan
+                              </button>
+                              <button type="button" className="btn btn--ghost btn--sm" onClick={() => { setEditPeristiwaId(null); setEditPeristiwaTanggal(''); }}>
+                                Batal
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn--ghost btn--sm"
+                              onClick={() => { setEditPeristiwaId(pr.id); setEditPeristiwaTanggal(pr.tanggal ?? ''); }}
+                            >
+                              Ubah Tanggal
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--sm"
+                            onClick={() => setEdit({ bagian: 'identitas', data: { nama: u.nama, jenisKelamin: u.jenisKelamin, tanggalLahir: u.tanggalLahir, agama: u.agama, alamat: u.alamat } })}
+                          >
+                            Edit Data Diri
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
 
       <div className="detail-section">
         <div className="detail-section__header">

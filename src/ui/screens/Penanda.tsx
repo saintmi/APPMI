@@ -79,7 +79,7 @@ export default function Penanda() {
 
 function tindakLanjuti(p: Penanda, st: AplikasiState) {
   if (p.entitas === 'Umat') {
-    gotoRute({ layar: 'umat', id: p.idEntitas });
+    gotoRute({ layar: 'umat', id: p.idEntitas, tab: 'tindaklanjut' });
     return;
   }
   if (p.entitas === 'Kk') {
@@ -89,6 +89,11 @@ function tindakLanjuti(p: Penanda, st: AplikasiState) {
   if (p.entitas === 'Peristiwa') {
     const pr = st.peristiwa.find((x) => x.id === p.idEntitas);
     if (pr) {
+      const uu = st.umat.find((x) => x.id === pr.idUmat);
+      if (uu) {
+        gotoRute({ layar: 'umat', id: uu.id, tab: 'tindaklanjut' });
+        return;
+      }
       gotoRute({ layar: 'peristiwa', jenis: pr.jenis });
       return;
     }

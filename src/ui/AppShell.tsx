@@ -189,7 +189,7 @@ function layarDariRute(r: Rute, st: AplikasiState): ReactNode {
     case 'cadangan': return <Cadangan st={st} />;
     case 'llm': return <LLM />;
     case 'modetabel': return <ModeTabel />;
-    case 'umat': return r.id ? <KartuUmat id={r.id} /> : <Umat />;
+    case 'umat': return r.id ? <KartuUmat id={r.id} tab={r.tab} /> : <Umat />;
     case 'kk': return r.id ? <KartuKK id={r.id} /> : <Kk />;
     case 'peristiwa': return <Peristiwa jenis={r.jenis} />;
     case 'rekap': return <Rekap st={st} />;
