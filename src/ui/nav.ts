@@ -32,6 +32,11 @@ export const MENU: MenuGrup[] = [
       { label: 'Kematian', rute: { layar: 'peristiwa', jenis: 'KEMATIAN' } },
       { label: 'Pindah Agama', rute: { layar: 'peristiwa', jenis: 'PINDAH AGAMA' } },
       { label: 'Mutasi', rute: { layar: 'peristiwa', jenis: 'Mutasi' } },
+      { label: 'Mutasi Keluar', rute: { layar: 'peristiwa', jenis: 'MUTASI_KELUAR' } },
+      { label: 'Mutasi Masuk', rute: { layar: 'peristiwa', jenis: 'MUTASI_MASUK' } },
+      { label: 'Diterima Masuk', rute: { layar: 'peristiwa', jenis: 'DITERIMA MASUK' } },
+      { label: 'Pindah Alamat', rute: { layar: 'peristiwa', jenis: 'PINDAH ALAMAT' } },
+
       { label: 'Sakramen Inisiasi', rute: { layar: 'peristiwa', jenis: 'Sakramen Inisiasi' } },
       { label: 'Perminyakan Suci', rute: { layar: 'peristiwa', jenis: 'PERMINYAKAN SUCI' } },
       { label: 'Seminari Biara', rute: { layar: 'peristiwa', jenis: 'SEMINARI BIARA' } },
