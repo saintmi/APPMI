@@ -5,6 +5,9 @@
 import { useState } from 'react';
 import { useAplikasi, snapshotDari, sinkronkanPeristiwa } from '../../state/store.ts';
 import { persistensiAktif } from '../../state/autoSave.ts';
+import { gotoRute } from '../router.ts';
+
+
 import type { Umat } from '../../engine/types.ts';
 import PersonLink from '../components/PersonLink.tsx';
 import Field from '../components/Field.tsx';
@@ -158,7 +161,12 @@ export default function Umat({ idUmat }: { idUmat?: string } = {}) {
           </thead>
           <tbody>
             {daftar.map((u) => (
-              <tr key={u.id}>
+              <tr
+                key={u.id}
+                style={{ cursor: 'pointer' }}
+                onClick={() => gotoRute({ layar: 'umat', id: u.id })}
+              >
+
                 <td className="mono tabular">{u.id}</td>
                 <td><PersonLink id={u.id} nama={u.nama ?? '(tanpa nama)'}>{u.nama || '(tanpa nama)'}</PersonLink></td>
                 <td>{u.jenisKelamin}</td>
@@ -166,13 +174,23 @@ export default function Umat({ idUmat }: { idUmat?: string } = {}) {
                 <td>{u.idKK || '—'}</td>
                 <td><span className="badge badge--status">{u.status}</span></td>
                 <td className="cluster" style={{ gap: 4 }}>
-                  <select className="field__control" style={{ fontSize: '0.75rem', padding: '2px 6px', minHeight: 'auto' }} value={u.idKK} onChange={(e) => ubahKK(u.id, e.target.value)}>
+                  <select
+                    className="field__control"
+                    style={{ fontSize: '0.75rem', padding: '2px 6px', minHeight: 'auto' }}
+                    value={u.idKK}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => { e.stopPropagation(); ubahKK(u.id, e.target.value); }}
+                  >
                     <option value="">—</option>
                     {kkList.map((k) => <option key={k.id} value={k.id}>{k.id}</option>)}
                   </select>
-                  <button className="btn btn--ghost btn--sm" onClick={() => hapus(u.id)}>
+                  <button
+                    className="btn btn--ghost btn--sm"
+                    onClick={(e) => { e.stopPropagation(); hapus(u.id); }}
+                  >
                     Hapus
                   </button>
+
                 </td>
               </tr>
             ))}
