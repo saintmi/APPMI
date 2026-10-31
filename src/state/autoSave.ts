@@ -17,8 +17,10 @@ let timer: number | undefined;
 let gagalBerturut = 0;
 const MAKS_GAGAL = 3;
 let sedangMuat = false;
+let sedangMenyimpan = false;
 
 let onEmergency: (() => void) | null = null;
+
 
 export function onSimpanDarurat(cb: () => void) {
   onEmergency = cb;
@@ -57,9 +59,11 @@ function simpanSetelahTunda() {
   if (timer !== undefined) window.clearTimeout(timer);
   timer = window.setTimeout(async () => {
     timer = undefined;
+    if (sedangMenyimpan) return; // cegah pengiriman tumpang tindih
     const st = useAplikasi.getState();
     if (!st.settings) return;
     const s = snapshotDari(st);
+    sedangMenyimpan = true;
     try {
       st.tandaiStatus('menyimpan');
       await persistensiAktif().simpan(s);
@@ -75,12 +79,16 @@ function simpanSetelahTunda() {
       if (gagalBerturut >= MAKS_GAGAL) {
         st.tandaiStatus('gagal', 'Penyimpanan lokal gagal berulang. Simpan cadangan manual segera.');
       } else {
-        // coba lagi setelah 2 detik
-        timer = window.setTimeout(simpanSetelahTunda, 2000);
+        // coba lagi dengan jeda terbatas
+        const jeda = Math.min(2000 * gagalBerturut, 8000);
+        timer = window.setTimeout(simpanSetelahTunda, jeda);
       }
+    } finally {
+      sedangMenyimpan = false;
     }
   }, 500);
 }
+
 
 export function aktifkanAutoSimpan() {
   useAplikasi.subscribe((state, prev) => {

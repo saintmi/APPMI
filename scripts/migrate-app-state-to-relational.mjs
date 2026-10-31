@@ -100,9 +100,9 @@ for (const r of v?.riwayat ?? v?.riwayatPindahAlamat ?? []) {
 // audit
 for (const a of v?.audit ?? v?.auditLog ?? []) {
   await sql.query(
-    `INSERT INTO audit_log (id, waktu, aksi, entitas, id_entitas, sebelum, sesudah)
-     VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb)`,
-    [a.id ?? null, a.waktu ?? '', a.aksi ?? '', a.entitas ?? '', a.idEntitas ?? '', a.sebelum == null ? null : JSON.stringify(a.sebelum), a.sesudah == null ? null : JSON.stringify(a.sesudah)]
+    `INSERT INTO audit_log (waktu, aksi, entitas, id_entitas, sebelum, sesudah)
+     VALUES ($1,$2,$3,$4,$5::jsonb,$6::jsonb)`,
+    [a.waktu ?? '', a.aksi ?? '', a.entitas ?? '', a.idEntitas ?? '', a.sebelum == null ? null : JSON.stringify(a.sebelum), a.sesudah == null ? null : JSON.stringify(a.sesudah)]
   );
 }
 

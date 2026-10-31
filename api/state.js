@@ -91,7 +91,7 @@ export default async function handler(req, res) {
         queries.push(sql`INSERT INTO riwayat_pindah_alamat (id, id_umat, tanggal, alamat_lama, kub_lama, alamat_baru, kub_baru, updated_at) VALUES (${r.id}, ${r.idUmat ? r.idUmat : null}, ${r.tanggal ?? ''}, ${r.alamatLama ?? ''}, ${r.KUBLama ?? ''}, ${r.alamatBaru ?? ''}, ${r.KUBBaru ?? ''}, now())`);
       }
       for (const a of value?.audit ?? value?.auditLog ?? []) {
-        queries.push(sql`INSERT INTO audit_log (id, waktu, aksi, entitas, id_entitas, sebelum, sesudah) VALUES (${null}, ${a.waktu ?? ''}, ${a.aksi ?? ''}, ${a.entitas ?? ''}, ${a.idEntitas ?? ''}, ${a.sebelum == null ? null : JSON.stringify(a.sebelum)}::jsonb, ${a.sesudah == null ? null : JSON.stringify(a.sesudah)}::jsonb)`);
+        queries.push(sql`INSERT INTO audit_log (waktu, aksi, entitas, id_entitas, sebelum, sesudah) VALUES (${a.waktu ?? ''}, ${a.aksi ?? ''}, ${a.entitas ?? ''}, ${a.idEntitas ?? ''}, ${a.sebelum == null ? null : JSON.stringify(a.sebelum)}::jsonb, ${a.sesudah == null ? null : JSON.stringify(a.sesudah)}::jsonb)`);
       }
       for (const p of value?.penanda ?? []) {
         queries.push(sql`INSERT INTO penanda (id, jenis, pesan, entitas, id_entitas, aktif, updated_at) VALUES (${p.id}, ${p.jenis}, ${p.pesan ?? ''}, ${p.entitas ?? ''}, ${p.idEntitas ?? ''}, ${p.aktif ?? true}, now())`);

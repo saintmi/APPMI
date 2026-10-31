@@ -1,4 +1,4 @@
-﻿export function rowToSettings(r) {
+export function rowToSettings(r) {
   return r ? {
     namaLingkungan: r.nama_lingkungan,
     daftarKUB: r.daftar_kub ?? [],
@@ -90,7 +90,7 @@ export function rowToRiwayat(r) {
 
 export function rowToAudit(r) {
   return {
-    id: Number(r.id),
+    id: r.id == null ? 0 : Number(r.id),
     waktu: r.waktu,
     aksi: r.aksi,
     entitas: r.entitas,
