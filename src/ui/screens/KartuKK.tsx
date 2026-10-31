@@ -9,6 +9,9 @@ import PersonLink from '../components/PersonLink.tsx';
 import Field from '../components/Field.tsx';
 import MemberPicker from '../components/MemberPicker.tsx';
 import LampiranList from '../components/LampiranList.tsx';
+import { parseTanggal } from '../../engine/tanggal.ts';
+
+
 
 export default function KartuKK({ id }: { id: string }) {
   const st = useAplikasi();
@@ -32,7 +35,36 @@ export default function KartuKK({ id }: { id: string }) {
     );
   }
 
-  const anggota = st.umat.filter((u) => u.idKK === id).sort((a, b) => (a.nama ?? '').localeCompare(b.nama ?? ''));
+  const anggotaDasar = st.umat.filter((u) => u.idKK === id);
+  const kepalaUmat = anggotaDasar.find((u) => u.nama === kk!.namaKepalaKeluarga);
+  const headMale = kepalaUmat?.jenisKelamin === 'Laki-laki';
+  function peranAnggota(u: typeof anggotaDasar[number]): number {
+    if (u.nama === kk!.namaKepalaKeluarga || /kepala/i.test(u.statusHubunganKeluarga || '')) return 0;
+
+    const hub = (u.statusHubunganKeluarga || '').toLowerCase();
+    if (/istri|suami|pasangan/.test(hub)) return 1;
+    if (headMale && u.jenisKelamin === 'Perempuan' && !/anak|child/.test(hub)) return 1;
+    if (!headMale && u.jenisKelamin === 'Laki-laki' && !/anak|child/.test(hub)) return 1;
+    return 2;
+  }
+  const anggota = [...anggotaDasar].sort((a, b) => {
+    const ra = peranAnggota(a);
+    const rb = peranAnggota(b);
+    if (ra !== rb) return ra - rb;
+    if (ra === 2) {
+      const pa = parseTanggal(a.tanggalLahir);
+      const pb = parseTanggal(b.tanggalLahir);
+      if (pa && pb) {
+        if (pa.y !== pb.y) return pa.y - pb.y;
+        if (pa.m !== pb.m) return pa.m - pb.m;
+        return pa.d - pb.d;
+      }
+      return (a.nama || '').localeCompare(b.nama || '');
+    }
+    return 0;
+  });
+
+
 
   const hapusKK = async () => {
     const ya = await st.mintaKonfirmasi({

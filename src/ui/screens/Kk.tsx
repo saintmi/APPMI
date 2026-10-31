@@ -7,6 +7,9 @@ import { useAplikasi, snapshotDari } from '../../state/store.ts';
 import { persistensiAktif } from '../../state/autoSave.ts';
 import { gotoRute } from '../router.ts';
 import type { Kk } from '../../engine/types.ts';
+import { parseTanggal } from '../../engine/tanggal.ts';
+
+
 import Field from '../components/Field.tsx';
 
 export default function Kk() {
@@ -59,13 +62,39 @@ export default function Kk() {
   };
 
   const previewKK = (k: Kk) => {
-    const anggota = st.umat.filter((u) => u.idKK === k.id).sort((a, b) => (a.nama ?? '').localeCompare(b.nama ?? ''));
-
+    const anggotaDasar = st.umat.filter((u) => u.idKK === k.id);
+    const kepalaUmat = anggotaDasar.find((u) => u.nama === k.namaKepalaKeluarga);
+    const headMale = kepalaUmat?.jenisKelamin === 'Laki-laki';
+    function peran(u: typeof anggotaDasar[number]): number {
+      if (u.nama === k.namaKepalaKeluarga || /kepala/i.test(u.statusHubunganKeluarga || '')) return 0;
+      const hub = (u.statusHubunganKeluarga || '').toLowerCase();
+      if (/istri|suami|pasangan/.test(hub)) return 1;
+      if (headMale && u.jenisKelamin === 'Perempuan' && !/anak|child/.test(hub)) return 1;
+      if (!headMale && u.jenisKelamin === 'Laki-laki' && !/anak|child/.test(hub)) return 1;
+      return 2;
+    }
+    const anggota = [...anggotaDasar].sort((a, b) => {
+      const ra = peran(a);
+      const rb = peran(b);
+      if (ra !== rb) return ra - rb;
+      if (ra === 2) {
+        const pa = parseTanggal(a.tanggalLahir);
+        const pb = parseTanggal(b.tanggalLahir);
+        if (pa && pb) {
+          if (pa.y !== pb.y) return pa.y - pb.y;
+          if (pa.m !== pb.m) return pa.m - pb.m;
+          return pa.d - pb.d;
+        }
+        return (a.nama || '').localeCompare(b.nama || '');
+      }
+      return 0;
+    });
     const w = window.open('', '_blank');
     if (!w) return;
     const rows = anggota.map((u, i) => `
       <tr>
         <td>${i + 1}</td>
+
         <td>${u.nama || '—'}</td>
         <td>${u.id}</td>
         <td>${u.jenisKelamin || '—'}</td>
