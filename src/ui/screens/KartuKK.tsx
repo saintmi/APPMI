@@ -76,6 +76,11 @@ export default function KartuKK({ id }: { id: string }) {
           <button className="btn btn--ghost" onClick={() => setEditKK(true)}>
             Edit Data KK
           </button>
+          <button className="btn btn--ghost" onClick={() => window.print()}>
+            Cetak/Preview PDF
+          </button>
+
+
           <button className="btn btn--danger" onClick={hapusKK}>
             Hapus KK
           </button>

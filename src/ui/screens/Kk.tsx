@@ -75,7 +75,12 @@ export default function Kk() {
           <option value="">Semua KUB</option>
           {daftarKUB.map((k) => <option key={k} value={k}>{k}</option>)}
         </select>
+        <button className="btn btn--ghost" onClick={() => window.print()}>
+          Cetak Bulk PDF (Filter KUB)
+        </button>
         <span className="muted">{kkTersaring.length} dari {st.kk.length} KK</span>
+
+
       </div>
 
       {form.show && (
