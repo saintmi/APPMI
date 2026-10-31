@@ -40,8 +40,19 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
   const [editId, setEditId] = useState<string | null>(null);
   const [editTanggal, setEditTanggal] = useState('');
   const [cari, setCari] = useState('');
+  const [umatQuery, setUmatQuery] = useState('');
+  const [umatOpen, setUmatOpen] = useState(false);
 
   const umat = st.umat;
+  const umatTerpilih = umat.find((x) => x.id === form.idUmat);
+  const umatFiltered = umat
+    .filter((u) => {
+      const q = umatQuery.trim().toLowerCase();
+      if (!q) return true;
+      return (u.nama || '').toLowerCase().includes(q) || u.id.toLowerCase().includes(q);
+    })
+    .slice(0, 15);
+
 
   useEffect(() => {
     setForm((f) => ({ ...f, jenis: jenisDefaultUntuk(jenis) }));
@@ -66,7 +77,10 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
     st.tambahPeristiwa(p);
     await persistensiAktif().simpan(snapshotDari(useAplikasi.getState()));
     setForm({ idUmat: '', jenis: jenisDefaultUntuk(jenis), tanggal: '', keterangan: '' });
+    setUmatQuery('');
+    setUmatOpen(false);
     st.tampilkanPesan('Peristiwa disimpan.', 'ok');
+
   };
 
   const hapus = (id: string) => {
@@ -106,14 +120,52 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
   return (
     <div className="page-card">
       <div className="cluster" style={{ marginBottom: 14, gap: 8, flexWrap: 'wrap' }}>
-        <Field label="Pilih Umat" required>
-          <select className="field__control" value={form.idUmat} onChange={(e) => setForm({ ...form, idUmat: e.target.value })}>
-            <option value="">-- Pilih umat --</option>
-            {umat.map((u) => (
-              <option key={u.id} value={u.id}>{u.nama || '(tanpa nama)'} ({u.id})</option>
-            ))}
-          </select>
+        <Field label="Pilih Umat (ketik nama)" required>
+          <div style={{ position: 'relative' }}>
+            <input
+              className="field__control"
+              placeholder="Ketik nama/ID umat untuk filter..."
+              value={umatQuery}
+              onChange={(e) => { setUmatQuery(e.target.value); setForm({ ...form, idUmat: '' }); setUmatOpen(true); }}
+              onFocus={() => setUmatOpen(true)}
+              onBlur={() => setTimeout(() => setUmatOpen(false), 150)}
+            />
+            {umatOpen && (
+              <ul
+                style={{
+                  position: 'absolute', zIndex: 20, left: 0, right: 0, top: '100%',
+                  background: 'var(--color-surface, #fff)', border: '1px solid var(--color-border, #ccc)',
+                  maxHeight: 220, overflowY: 'auto', listStyle: 'none', margin: 0, padding: 0,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }}
+              >
+                {umatFiltered.length === 0 && (
+                  <li style={{ padding: 8, color: 'var(--color-text-muted, #666)' }}>Tidak ditemukan.</li>
+                )}
+                {umatFiltered.map((u) => (
+                  <li
+                    key={u.id}
+                    style={{ padding: '6px 8px', cursor: 'pointer' }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setForm({ ...form, idUmat: u.id });
+                      setUmatQuery(u.nama || '');
+                      setUmatOpen(false);
+                    }}
+                  >
+                    {u.nama || '(tanpa nama)'} <span className="muted">({u.id})</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {umatTerpilih && (
+            <div className="muted" style={{ marginTop: 4, fontSize: 12 }}>
+              Terpilih: {umatTerpilih.nama} ({umatTerpilih.id})
+            </div>
+          )}
         </Field>
+
         <Field label="Jenis Peristiwa" required>
           <select className="field__control" value={form.jenis} onChange={(e) => setForm({ ...form, jenis: e.target.value as JenisPeristiwa })}>
             {daftarJenis.map((j) => (
