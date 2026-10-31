@@ -42,6 +42,8 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
   const [cari, setCari] = useState('');
   const [umatQuery, setUmatQuery] = useState('');
   const [umatOpen, setUmatOpen] = useState(false);
+  const [berpindahLingkungan, setBerpindahLingkungan] = useState(false);
+  const [anggotaKKIkut, setAnggotaKKIkut] = useState(false);
 
   const umat = st.umat;
   const umatTerpilih = umat.find((x) => x.id === form.idUmat);
@@ -52,6 +54,11 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
       return (u.nama || '').toLowerCase().includes(q) || u.id.toLowerCase().includes(q);
     })
     .slice(0, 15);
+  const isMutasi = MUTASI_JENIS.includes(form.jenis);
+  const kkKepala = isMutasi && umatTerpilih
+    ? st.kk.find((k) => k.namaKepalaKeluarga === (umatTerpilih.nama || ''))
+    : undefined;
+
 
 
   useEffect(() => {
@@ -70,16 +77,24 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
     if (!u) { st.tampilkanPesan('Umat tidak ditemukan.', 'galat'); return; }
     if (!form.tanggal) { st.tampilkanPesan('Tanggal peristiwa wajib diisi.', 'galat'); return; }
 
+    const meta: string[] = [];
+    if (isMutasi) meta.push(`Berpindah ke lingkungan lain: ${berpindahLingkungan ? 'Ya' : 'Tidak'}`);
+    if (kkKepala) meta.push(`Anggota KK ikut dimutasi: ${anggotaKKIkut ? 'Ya' : 'Tidak'}`);
+    const keteranganFinal = [form.keterangan.trim(), meta.join('; ')].filter(Boolean).join(' | ');
+
     const p: Peristiwa = {
       id: '', idUmat: form.idUmat, jenis: form.jenis, nama: u.nama, lingkungan: st.settings?.namaLingkungan ?? '',
-      jenisKelamin: u.jenisKelamin, tanggalLahir: u.tanggalLahir, tanggal: form.tanggal, keterangan: form.keterangan,
+      jenisKelamin: u.jenisKelamin, tanggalLahir: u.tanggalLahir, tanggal: form.tanggal, keterangan: keteranganFinal,
     };
     st.tambahPeristiwa(p);
     await persistensiAktif().simpan(snapshotDari(useAplikasi.getState()));
     setForm({ idUmat: '', jenis: jenisDefaultUntuk(jenis), tanggal: '', keterangan: '' });
     setUmatQuery('');
     setUmatOpen(false);
+    setBerpindahLingkungan(false);
+    setAnggotaKKIkut(false);
     st.tampilkanPesan('Peristiwa disimpan.', 'ok');
+
 
   };
 
@@ -179,6 +194,24 @@ export default function Peristiwa({ jenis }: { jenis?: string }) {
         <Field label="Keterangan">
           <input className="field__control" value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} />
         </Field>
+        {isMutasi && (
+          <>
+            <Field label="Apakah umat berpindah ke lingkungan lain?">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input type="checkbox" checked={berpindahLingkungan} onChange={(e) => setBerpindahLingkungan(e.target.checked)} />
+                Ya, berpindah ke lingkungan lain
+              </label>
+            </Field>
+            {kkKepala && (
+              <Field label={`Kepala KK ${kkKepala.id}: anggota KK termasuk yang dimutasi?`}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="checkbox" checked={anggotaKKIkut} onChange={(e) => setAnggotaKKIkut(e.target.checked)} />
+                  Ya, anggota KK ikut dimutasi
+                </label>
+              </Field>
+            )}
+          </>
+        )}
         <button className="btn btn--primary" onClick={simpan}>
           Tambah
         </button>
