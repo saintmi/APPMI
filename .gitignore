@@ -36,3 +36,5 @@ dev.err
 
 
 ~$*.xlsx
+.vercel
+.env*
