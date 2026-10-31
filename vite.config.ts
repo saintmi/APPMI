@@ -70,8 +70,9 @@ export default defineConfig({
           }
 
           try {
-            const candidates = [`/api/${relative}.ts`, `/api/${relative}.js`];
+            const candidates = [`/api/${relative}.js`, `/api/${relative}.ts`];
             let mod: any = null;
+
             let lastErr: any = null;
             for (const candidate of candidates) {
               try { mod = await server.ssrLoadModule(candidate); lastErr = null; break; }
