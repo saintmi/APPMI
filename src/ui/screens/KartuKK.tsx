@@ -50,9 +50,11 @@ export default function KartuKK({ id }: { id: string }) {
 
   const simpanKK = async (patch: { nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }) => {
     st.ubahKk(kk.id, patch);
-    await persistensiAktif().simpan(snapshotDari(st));
+    await persistensiAktif().simpan(snapshotDari(useAplikasi.getState()));
     st.tampilkanPesan('Data KK disimpan.', 'ok');
+    setEditKK(false);
   };
+
 
   return (
     <div className="page-card">
@@ -196,13 +198,15 @@ export default function KartuKK({ id }: { id: string }) {
         <MemberPicker idKK={kk.id} onClose={() => setTambahOpen(false)} onSelesai={() => st.tampilkanPesan('Anggota ditambahkan.', 'ok')} />
       )}
       {editKKOpen && (
-        <EditKKForm kk={kk} onSelesai={simpanKK} onClose={() => setEditKK(false)} />
+        <EditKKForm kk={kk} daftarKUB={st.settings?.daftarKUB ?? []} onSelesai={simpanKK} onClose={() => setEditKK(false)} />
       )}
+
     </div>
   );
 }
 
-function EditKKForm({ kk, onSelesai, onClose }: { kk: { id: string; nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }; onSelesai: (p: { nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }) => void; onClose: () => void }) {
+function EditKKForm({ kk, daftarKUB, onSelesai, onClose }: { kk: { id: string; nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }; daftarKUB: string[]; onSelesai: (p: { nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }) => void; onClose: () => void }) {
+
   const [form, setForm] = useState<{ nomorKK: string; namaKepalaKeluarga: string; alamat: string; KUB: string }>({
     nomorKK: kk.nomorKK, namaKepalaKeluarga: kk.namaKepalaKeluarga, alamat: kk.alamat, KUB: kk.KUB,
   });
@@ -229,7 +233,9 @@ function EditKKForm({ kk, onSelesai, onClose }: { kk: { id: string; nomorKK: str
           <Field label="KUB">
             <select className="field__control" value={form.KUB} onChange={(e) => setForm({ ...form, KUB: e.target.value })}>
               <option value="">-- Pilih KUB --</option>
+              {daftarKUB.map((k) => <option key={k} value={k}>{k}</option>)}
             </select>
+
           </Field>
         </div>
         <div className="cluster" style={{ marginTop: 10 }}>
