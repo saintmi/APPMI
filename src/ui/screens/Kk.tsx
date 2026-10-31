@@ -58,6 +58,65 @@ export default function Kk() {
     st.hapusKk(id);
   };
 
+  const previewKK = (k: Kk) => {
+    const anggota = st.umat.filter((u) => u.idKK === k.id).sort((a, b) => (a.nama ?? '').localeCompare(b.nama ?? ''));
+
+    const w = window.open('', '_blank');
+    if (!w) return;
+    const rows = anggota.map((u, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${u.nama || '—'}</td>
+        <td>${u.id}</td>
+        <td>${u.jenisKelamin || '—'}</td>
+        <td>${u.tanggalLahir || '—'}</td>
+        <td>${u.agama || '—'}</td>
+        <td>${u.statusPerkawinan || '—'}</td>
+        <td>${u.statusHubunganKeluarga || '—'}</td>
+        <td>${u.kewarganegaraan || 'WNI'}</td>
+      </tr>
+    `).join('');
+    w.document.write(`<!DOCTYPE html><html><head><title>KK ${k.id}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; font-size: 18px; margin: 0; }
+        .meta { margin: 10px 0; font-size: 13px; }
+        .meta div { margin: 2px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        th, td { border: 1px solid #000; padding: 4px; }
+        th { background: #eee; }
+        .footer { margin-top: 30px; display: flex; justify-content: space-between; font-size: 12px; }
+        @media print { body { margin: 10mm; } }
+      </style>
+    </head><body>
+      <h1>KARTU KELUARGA</h1>
+      <div class="meta">
+        <div><b>No. KK:</b> ${k.nomorKK || '—'}</div>
+        <div><b>ID KK:</b> ${k.id}</div>
+        <div><b>Nama Kepala Keluarga:</b> ${k.namaKepalaKeluarga || '—'}</div>
+        <div><b>Alamat:</b> ${k.alamat || '—'}</div>
+        <div><b>KUB:</b> ${k.KUB || '—'}</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>No</th><th>Nama Lengkap</th><th>ID Umat</th><th>JK</th><th>Tgl Lahir</th><th>Agama</th><th>Status Kawin</th><th>Hubungan</th><th>Kewarganegaraan</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows || '<tr><td colspan="9" style="text-align:center">Belum ada anggota</td></tr>'}
+        </tbody>
+      </table>
+      <div class="footer">
+        <div>Dicetak: ${new Date().toLocaleDateString('id-ID')}</div>
+        <div>Kepala Keluarga<br/><br/><br/>${k.namaKepalaKeluarga || '—'}</div>
+      </div>
+      <script>window.onload = () => { window.print(); };</script>
+    </body></html>`);
+    w.document.close();
+  };
+
+
   return (
     <div className="page-card">
       <div className="cluster" style={{ marginBottom: 14, gap: 8 }}>
@@ -162,9 +221,13 @@ export default function Kk() {
                     <button className="btn btn--ghost btn--sm" onClick={() => tambahAnggotaKeKK()}>
                       Tambah Anggota
                     </button>
+                    <button className="btn btn--ghost btn--sm" onClick={() => previewKK(k)}>
+                      Preview
+                    </button>
                     <button className="btn btn--ghost btn--sm" onClick={() => hapus(k.id)}>
                       Hapus
                     </button>
+
                   </td>
                 </tr>
               );
